@@ -2,6 +2,7 @@
 
 Abaixo deixarei a File Tree inicial da aplicação planejada
 
+```bash
 Application/
 ├── static/
 │   └── styles.css
@@ -9,6 +10,7 @@ Application/
 │   └── index.html
 ├── app.py
 └── requirements.txt
+```
 
 ## 1 Implantação com servidor Flask
 
@@ -27,7 +29,7 @@ Dentro da VM é possivel simular um dominio de DNS para a aplicação, para isso
 
         192.168.1.6 myapp.com
 
-Considerando que 192.168.1.6 é o IP em que a aplicação está rodando e myapp.com o dominio que queremos utilizar. Após isso a aplicação podera ser acessada pelo navegador utilizando `myapp.com:5000` na barra de pesquisa.
+Considerando que 192.168.1.6 é o IP em que a aplicação está rodando e myapp.com o dominio que queremos utilizar. Após isso a aplicação podera ser acessada pelo navegador utilizando `myapp.com:5000` na barra de pesquisa. Ressaltando que esse nome de dominio so vale para a maquina em que se está executando a aplicação, pois o arquivo /etc/hosts será consultado antes do navegador procurar pela url em servidores DNS externos.
 
 ## 2. Utilizando o nginx como ProxyReverso
 

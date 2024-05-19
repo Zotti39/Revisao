@@ -1,3 +1,5 @@
+### O arquivo criado abaixo tem a função de encaminhar todas as requisições para o servidor Flask rodando localmente na porta 5000, e definir o nome de DNS que simulamos
+
 echo "
 server {
     listen 80;
@@ -13,6 +15,9 @@ server {
     }
 }" | sudo tee /etc/nginx/sites-available/myapp
 
-### Ativar a configuração que definimos anteriormente e permite que o NGINX a utilize para servir as requisições.
+### Ativar a configuração que definimos anteriormente e permite que o NGINX a utilize para servir as requisições. Passa o arquivo para o dir. sites-enabled do NGINX
 sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/
+
+### Apos isso podemos resetar o serviço do NGINX com o comando ``sudo systemctl restart nginx`` e fazer o run da aplicação com ``python3 Application/app.py`` que ela já estará acessivel pelo nome de DNS que definimos
+
 

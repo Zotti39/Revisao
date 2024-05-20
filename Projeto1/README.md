@@ -1,13 +1,15 @@
 # Projeto1
 
-Abaixo deixarei a File Tree atualizada da aplicação em uso, que por hora será um website basico, já que o objetivo é apenas fazer o deployment
+Abaixo deixarei a File Tree atualizada da aplicação em uso, que por hora será um website basico, já que o objetivo é apenas fazer o deployment ------- aplicação versão 1.3
 
 ```bash
 Application/
 ├── static/
 │   └── styles.css
 ├── templates/
-│   └── index.html
+│   ├── index.html
+│   ├── add.html
+│   └── display.html
 ├── app.py
 ├── requirements.txt
 ├── DockerFile                          
@@ -62,17 +64,17 @@ OBS: para essa parte não foi utilizado nenhum simulador de nome de dominio
 
 O arquivo ``Dockerfile`` dentro do repositorio, fará o empacotamento da aplicação Flask, transformando ela em uma imagem de um container.
 
-O arquivo ``docker-compose.yaml`` facilita o processo de implementação da aplicação, subindo os dois containers necessarios (do nginx e da app) de uma só vez, provendo tambem facil reprodudutibilidade e portabilidade do sistema.
+O arquivo ``docker-compose.yaml`` facilita o processo de implementação da aplicação, subindo os dois containers necessarios (do nginx e da app) de uma só vez, provendo tambem facil reprodudutibilidade e portabilidade do sistema.Os serviços podem se comunicar entre si usando os nomes dos serviços como hosts quando criados a partir de um arquivo docker-compose.
 
 O arquivo ``nginx.conf`` define como o NGINX deve lidar com as requisições HTTP recebidas e como essas requisições devem ser encaminhadas para o serviço Flask rodando em outro contêiner. 
 
-Para iniciar esse sistema devemos primerio para o nginx que esta funcionando na maquina, pois o sistema containerizado necessita das mesmas portas para funcionar:
+Para iniciar esse sistema devemos parar o nginx que esta funcionando na maquina, pois o sistema containerizado necessita das mesmas portas para funcionar
 
-                systemctl stop nginx
+        systemctl stop nginx
         
 Agora podemos passar o comando:
 
-                docker-compose -f Application/docker-compose.yaml up -d
+        docker-compose -f Application/docker-compose.yaml up -d
 
 Agora ao acessar ``http://localhost`` no navegador, veremos a aplicação rodando
 
@@ -83,3 +85,25 @@ Agora ao acessar ``http://localhost`` no navegador, veremos a aplicação rodand
 4. O Docker Compose gerencia a rede interna, permitindo que web seja resolvido para o IP correto do contêiner que executa o serviço Flask.
 5. O serviço Flask processa a requisição e retorna a resposta ao NGINX.
 6. O NGINX então envia o site com a aplicação de volta ao cliente.
+
+## 4. Adicionando um MongoDB a aplicação
+
+Primeiro vamos adicionar alguma interatividade a aplicação flask, com duas novas paginas para adicionar e visualizar dados da DB, ao acessar a aplicação usando ``http://localhost/add`` poderemos adicionar dados ao banco de dados, e ao usar ``http://localhost/display`` poderemos ver as informaçoes contidas nele.
+
+Foi adicionada a biblioteca ``pymongo`` (necessaria para conectar a aplicação ao bando de dados na app.py) aos requirements, assim o container ira instalar essa lib
+
+Para adicionar uma base de dados dentro desse sistema, vamos utilizar um container, assim como para os outros serviços, dentro do arquivo do docker-compose vamos especificar um novo ``services`` com o nome ``mongo``, ele será apontado para a porta ``27017`` e utilizará a versão 4.4 devido a incompatibilidades do sistema ("MongoDb 5.0+ requires a CPU with AVX support, and your current system does not appear to have that")
+
+A aplicação Flask vai conseguir fazer acesso a base de dados devido a linha 7 do arquivo ``app.py``
+
+        client = MongoClient("mongodb://mongo:27017/")
+
+No caso ``mongo`` é o nome do svc definido na ``docker-compose.yaml`` e 27017 é a porta que o container mongoDB esta ouvindo. No caso o container da aplicação fara conexao com o container da DataBase, o arquivo docker-compose prove essa comunicação
+
+Apos configurado, utilizar comando a seguir para iniciar o serviço
+        
+        docker-compose -f Application/docker-compose.yaml up -d 
+
+
+
+....................................................................................................................

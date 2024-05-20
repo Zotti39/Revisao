@@ -7,6 +7,8 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
+    depends_on:
+      - mongo
 
   nginx:
     image: nginx:latest
@@ -16,3 +18,13 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf  ### Utiliza o arquivo nginx.conf para definir o redirecionamento de requisiçoes que o proxy reverso do nginx fará, enviando o acesso para a aplicação web.
     depends_on:
       - web
+  
+  mongo: 
+    image: mongo:4.4  
+    ports:
+      - "27017:27017"
+#    volumes:                   ### Volumes poderiam ser definidos para manter os dados persistentes em uma pasta na maquina que hosteia o sistema
+#      - dados:/data/db         ### mas como isso pe apenas para testes não tem necessidade
+#volumes:
+#  dados: 
+   

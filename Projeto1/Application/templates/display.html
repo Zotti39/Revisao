@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Informações</title>
+</head>
+<body>
+    <h1>Lista de Informações</h1>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.name }} - {{ user.color }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

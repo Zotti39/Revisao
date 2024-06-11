@@ -1,0 +1,13 @@
+### Esse arquivo define o serviço que permite a comunicação da aplicação web com a database MongoDB por meio de um ClusterIP
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo                ### mongo é o nome do serviço deeefinido no arquivo "app.py" da aplicação e deve ser o mesmo usado nesse campo, otherwise it wont work
+spec:                           
+  type: ClusterIP            ### CLusterIP permite a comunicação apenas de dentro do cluster, entre o pod web-app e o mongo por exemplo   
+  selector:                   
+    app: mongo               ### Esse atributo indica o label dos pods do deploy mongo
+  ports:                      
+    - port: 27017            ### 27017 é a porta padrão do mongdb, estabelecida no "mongoDeploy.yaml"
+

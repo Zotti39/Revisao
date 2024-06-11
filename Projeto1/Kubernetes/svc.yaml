@@ -1,0 +1,14 @@
+### Esse arquivo define o serviço que permitee a conexão da aplicação flask por meio do ip do minikube, tornando o app acessivel
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app-svc         ### É o nome do service
+spec:                       
+  type: NodePort            ### NodePort é o atributo que permite o acesso externo a aplicação, ClusterIP permite o acesso apenas vindo d dentro do cluster
+  selector:                 
+    app: flask              ### Esse atributo indica o label dos pods do deploy web-app
+  ports:                    
+    - port: 5000            ### 5000 é a porta que a aplicação esta ouvindo, definido na Dockerfilee no app.py
+      nodePort: 32010       ### A porta 32010 é a que será usada para acessar a aplicação, com a seguinte url : "<minikube_ip>:32010"
+

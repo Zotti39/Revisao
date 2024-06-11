@@ -1,20 +1,31 @@
 # Projeto1
 
-Abaixo deixarei a File Tree atualizada da aplicação em uso, que por hora será um website basico, já que o objetivo é apenas fazer o deployment ------- aplicação versão 1.3
+Abaixo deixarei a ``File Tree`` atualizada da aplicação em uso, que por hora será um website basico, já que o objetivo é apenas fazer o deployment ------- aplicação versão 1.4
 
 ```bash
-Application/
-├── static/
-│   └── styles.css
-├── templates/
-│   ├── index.html
-│   ├── add.html
-│   └── display.html
-├── app.py
-├── requirements.txt
-├── DockerFile                          
-├── docker-compose.yaml
-└── nginx.conf
+Projeto1/
+├── Application
+│   ├── app.py
+│   ├── docker-compose.yaml
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── requirements.txt
+│   ├── static
+│   │   └── styles.css
+│   └── templates
+│       ├── add.html
+│       ├── display.html
+│       └── index.html
+│
+├── Kubernetes
+│   ├── deploy.yaml
+│   ├── mongoDeploy.yaml
+│   ├── mongoSvc.yaml
+│   └── svc.yaml
+│
+├── nginxScript.sh
+├── README.md
+└── startScript.sh
 ```
 
 ## 1. Implantação com servidor Flask
@@ -105,5 +116,41 @@ Apos configurado, utilizar comando a seguir para iniciar o serviço
         docker-compose -f Application/docker-compose.yaml up -d 
 
 
+## 5. Fazendo deploy com Kubernetes
 
-....................................................................................................................
+### Os arquivos yaml do kubernetes possuem explicações mais detalhadas sobre o funcionamento de cada deployment e serviço, estão disponiveis no diretorio /Projeto1/Kubernetes
+
+Para fazer um deploy com kubernetes dessa aplicação será necessario a criação de um cluster, para simplificar essa parte usarei o minikube, que gera um "one node cluster" onde poderemos focar na parte da aplicação, mas caso seja de sua preferencia esse mesmo usuario possui um repositorio chamado ``K8sCluster`` com instruções para criar um cluster com master e worker nodes utilizando VMs linux ou EC2/AWS, os proximos passo são praticamente iguais independente da sua escolha para cluster.
+
+Para iniciar o MiniKube
+
+        minikube start --memory 4096
+
+Após iniciado será necessario 2 arquivos de declaração do kubernetes, um para os deployments (a aplicação em si) e um para os serviços (comunicação entre pods e conexão a internet).
+
+<img src="https://github.com/Zotti39/Revisao/Imagens/dockerImages.png">
+
+Para poder utilizar a imagem localizada na maquina virtual, terei que armazena-la em um repositorio do dockerhub, já que por padrão o kubernetes não tem acesso ao repositorio de imagens local, para isso temos que taguear a imagem: 
+
+        docker tag application_web:latest <seu_user>/application_web:latest
+
+E em seguida fazer o push ao repositorio dockerHub:
+
+        docker push <seu_user>/application_web:latest
+
+Agora seguimos "executando" o arquivo ``deploy.yaml`` que fará o deployment de um unico pod da aplicação flask:
+
+        kubectl apply -f deploy.yaml --record
+
+Para ver o status de implantação, run ``kubectl rollout status deploy web_app_deploy`` ou ``kubectl rollout history deploy web_app_deploy`` (armazena o historico do deploy, para ele é util o uso da flag --record)
+
+Para adicionar o container da DataBase mongo, fazemos o mesmo procedimento com o arquivo ``mongoDeploy.yaml``
+
+        kubectl apply -f mongoDeploy.yaml --record
+
+Com a aplicação já em execução, precisamos de uma forma de acessa-la com segurança, e para isso fazemos uso dos ``services`` disponiveis no k8s, teremos dois deles. O primeiro ``svc.yaml`` do tipo NodePort, serve para encaminhar as requisiçoes vindas da rede para a aplicação flask, pegando as requisiçoes de ``<minikube_ip>:<NodePort>`` e encaminhando para a porta `5000` (porta definida no `app.py`). O segundo ``mongoSvc.yaml`` do tipo ClusterIP permite ao pod da aplicação flask se comunicar com o pod da base de dados Mongo, especificando a porta 27017 (padrão do MongoDB).
+
+        kubectl apply -f mongoSvc.yaml 
+        kubectl apply -f svc.yaml 
+
+Agora, a partir de ``<minikube_ip>:32010`` já será possivel acessar a aplicação (verifique se a nodePort estabelecida em ``svc.yaml`` é 32010), e o sistema estará devidamente implementado (tendo como unico objetivo testar a ferramenta)

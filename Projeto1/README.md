@@ -128,7 +128,7 @@ Para iniciar o MiniKube
 
 Após iniciado será necessario 2 arquivos de declaração do kubernetes, um para os deployments (a aplicação em si) e um para os serviços (comunicação entre pods e conexão a internet).
 
-<img src="https://github.com/Zotti39/Revisao/Imagens/dockerImages.png">
+<img src="https://github.com/Zotti39/Revisao/blob/main/Imagens/dockerImages.png">
 
 Para poder utilizar a imagem localizada na maquina virtual, terei que armazena-la em um repositorio do dockerhub, já que por padrão o kubernetes não tem acesso ao repositorio de imagens local, para isso temos que taguear a imagem: 
 

@@ -1,0 +1,37 @@
+### O arquivo Deployment é igual ao da versão original sem o nginx, o Service foi alterado para ser um clusterIP disponibilizadno a aplicação para acesso interno ao cluster, expondo a porta 80 do cluster
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-deploy
+  labels:
+    app: flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+        - name: web-app  
+          image: zotti39/application_web:latest
+          ports:
+            - containerPort: 5000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app-svc         
+spec:
+  type: ClusterIP          
+  selector:
+    app: flask              
+  ports:
+    - port: 80                ### A porta exposta internamente ao cluster, essa porta será a que o ingress irá acessar para chegar até a aplicação, e poder encaminha-la ao cliente
+      targetPort: 5000        ### A porta que deve ser acessada no container dentro do pod (mesma exposta pela app no app.py)

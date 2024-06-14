@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: 
+  name: service-web
+spec:
+  ingressClassName: nginx 
+  rules:
+  - host: meuapp.com                ### Esse dominio foi simulado dentro da file /etc/hosts, apontando para o ip do minikube (192.168.49.2)
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-app-svc       ### Mesmo nome do service que expoe a app ao cluster internamente
+            port:                   
+              number: 80            ### Porta para qual o trafego será direcionado, no caso, o servico responsavel pela aplicação flask, que foi definido no arquivo `app.yaml` em spec.ports.port 

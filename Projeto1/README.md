@@ -23,8 +23,14 @@ Projeto1/
 │   ├── mongoSvc.yaml
 │   └── svc.yaml
 │
+├── KubernetesNginx
+│   ├── app.yaml
+│   ├── ingress.yaml
+│   └── mongo.yaml
+│
 ├── nginxScript.sh
 ├── README.md
+├── scriptHelm.sh
 └── startScript.sh
 ```
 
@@ -154,3 +160,31 @@ Com a aplicação já em execução, precisamos de uma forma de acessa-la com se
         kubectl apply -f svc.yaml 
 
 Agora, a partir de ``<minikube_ip>:32010`` já será possivel acessar a aplicação (verifique se a nodePort estabelecida em ``svc.yaml`` é 32010), e o sistema estará devidamente implementado (tendo como unico objetivo testar a ferramenta)
+
+# 6. Utilização do nginx como reverse proxy no cluster
+
+Nesta etapa implementaremos a aplicação novamente utilizando o kubernetes, mas desta vez, ao inves de expor a aplicação ao publico diretamente utilizando um serviço NodePort, iremos expor a aplicação apenas internamente no cluster, utilizadno um `ClusterIP`, e com um reverse proxy, fazer o redirecionamento de trafego, fazendo com que o "cliente" acesse o app indiretamente, por meio do nginx.
+
+Para isso, utilizando o MiniKube, podemos passar o comando `minikube addons list` e verificar a existencia de um addons chamado `Ingress`, ao ativa-lo com `minikube addons enable ingress`, o minikibe vai subir deployments e serviços do nginx-controller, restando a nos criar uma declaração yaml de um ``Ingress`` que é responsavel por passar ao nginx as informaçoes de redirecionamento de trafego que serão usadas pela aplicação.
+
+Os arquivos yaml dessa parte do processo estarão em um diretorio chamado `KubernetesNginx` e a diferença dos utilizado anteriormente está no serviço do app, que agora passa a ser um ``ClusterIP``, que expoe internamente ao cluster a porta 80, para dar acesso ao nginx. Lembre-se tambem de que no aruqivo `ingress.yaml` estamo utilizando um nome de dominio simulado, o `meuapp.com` e esse deve ser configurado no arquivo `/etc/hosts` como feito anteriormente.
+
+Apos utilizar `kubectl apply -f .` no diretorio /KubernetesNginx, teremos a implementação concluida, tendo e acessando `meuapp.com` veremos a aplicação flask, redirecionada por meio do nginx, que dá mais segurança ao nosso sistema, visto que ninguem teria acesso direto a aplicação na internet, e apesar de ser em um ambiente de testes, o mesmo conceito valeria para produção.
+
+### Definição de atributos de `Service` (mais infos diretamnete nos arquivo yaml) : 
+
+- `port` é a porta pela qual o serviço é acessado internamente, é exposta internamente ao cluster.
+
+- `targetPort` é a porta que deve ser acessada **__no container__** , deve ser a mesma definida no `app.py` e no `deploy.yaml`
+
+- `nodePort` reserva essa porta em todos os nós e encaminha o tráfego externo que chega nessa porta para a porta especificada no serviço.
+
+### EXTRA - Helm
+
+Caso esteja utilizando um cluster que não o MiniKube, o nginx controller poderá ser "instalado" utilizando o gerenciador `Helm` para isso disponibilizei no diretorio raiz do projeto um arquivo `scriptHelm.sh` que o instala, e apos sua execução pode utilizar o comando a seguir para adicionar os deploys e services do controlador ao seu cluster
+
+ 	helm upgrade --install ingress-nginx ingress-nginx \
+        --repo https://kubernetes.github.io/ingress-nginx \
+        --namespace ingress-nginx --create-namespace
+
+Os recursos do `nginx-controller` podem ser visualizados com o comando `kubectl get all -n ingress-nginx`
